@@ -1,3 +1,72 @@
 - name: debug
   debug:
     msg: "jeste buildbote"
+- name: system pkgs install (python, gcc)
+  yum:
+    name:
+      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}"
+      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}-setuptools"
+      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}-devel"
+      - gcc
+  become: True
+
+- name: set app dir value
+  set_fact:
+    _app_dir: "{{app.value['buildbot.master'].user.home}}/{{app.key}}"
+
+- block:
+  - name: create dir for app
+    file:
+      path: "{{_app_dir}}"
+      state: directory
+
+  - name: install pip
+    vars:
+      ansible_python_interpreter: "/usr/bin/python{{app.value['buildbot.master'].configs.python}}"
+    pip:
+      name: "pip"
+      state: latest
+      virtualenv: "{{_app_dir}}/venv"
+      virtualenv_command: "/usr/bin/python{{app.value['buildbot.master'].configs.python}} -m venv"
+
+  - name: install buildbot master
+    vars:
+      ansible_python_interpreter: "/usr/bin/python{{app.value['buildbot.master'].configs.python}}"
+    pip:
+      name: "buildbot[bundle]"
+      virtualenv: "{{_app_dir}}/venv"
+      virtualenv_command: "/usr/bin/python{{app.value['buildbot.master'].configs.python}} -m venv"
+
+  - name: create master
+    command: "{{_app_dir}}/venv/bin/buildbot create-master {{_app_dir}}"
+    args:
+      creates: "{{_app_dir}}/state.sqlite"
+
+  - name: copy master.cfg
+    template:
+      src: master.cfg
+      dest: "{{_app_dir}}/master.cfg"
+    notify:
+      - buildbot restart
+
+  become: True
+  become_user: "{{app.value['buildbot.master'].user.user}}"
+
+- block:
+    - name: copy service
+      template:
+        src: buildbot-master.service
+        dest: "/etc/systemd/system/{{app.value['buildbot.master'].user.user}}_buildbot-master.service"
+      notify:
+        - daemon reload
+        - buildbot restart
+
+    - meta: flush_handlers
+
+    - name: start buildbot
+      service:
+        name: "{{app.value['buildbot.master'].user.user}}_buildbot-master.service"
+        state: started
+        enabled: True
+
+  become: True
