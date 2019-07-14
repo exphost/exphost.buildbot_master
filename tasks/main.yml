@@ -4,15 +4,15 @@
 - name: system pkgs install (python, gcc)
   yum:
     name:
-      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}"
-      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}-setuptools"
-      - "python{{app.value['buildbot.master'].configs.python|replace('.','')}}-devel"
+      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}"
+      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-setuptools"
+      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-devel"
       - gcc
   become: True
 
 - name: set app dir value
   set_fact:
-    _app_dir: "{{app.value['buildbot.master'].user.home}}/{{app.key}}"
+    _app_dir: "{{app.value.buildbot_master.user.home}}/{{app.key}}"
 
 - block:
   - name: create dir for app
@@ -22,20 +22,20 @@
 
   - name: install pip
     vars:
-      ansible_python_interpreter: "/usr/bin/python{{app.value['buildbot.master'].configs.python}}"
+      ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
     pip:
       name: "pip"
       state: latest
       virtualenv: "{{_app_dir}}/venv"
-      virtualenv_command: "/usr/bin/python{{app.value['buildbot.master'].configs.python}} -m venv"
+      virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
 
   - name: install buildbot master
     vars:
-      ansible_python_interpreter: "/usr/bin/python{{app.value['buildbot.master'].configs.python}}"
+      ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
     pip:
       name: "buildbot[bundle]"
       virtualenv: "{{_app_dir}}/venv"
-      virtualenv_command: "/usr/bin/python{{app.value['buildbot.master'].configs.python}} -m venv"
+      virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
 
   - name: create master
     command: "{{_app_dir}}/venv/bin/buildbot create-master {{_app_dir}}"
@@ -50,13 +50,13 @@
       - buildbot restart
 
   become: True
-  become_user: "{{app.value['buildbot.master'].user.user}}"
+  become_user: "{{app.value.buildbot_master.user.user}}"
 
 - block:
     - name: copy service
       template:
         src: buildbot-master.service
-        dest: "/etc/systemd/system/{{app.value['buildbot.master'].user.user}}_buildbot-master.service"
+        dest: "/etc/systemd/system/{{app.value.buildbot_master.user.user}}_buildbot-master.service"
       notify:
         - daemon reload
         - buildbot restart
@@ -65,7 +65,7 @@
 
     - name: start buildbot
       service:
-        name: "{{app.value['buildbot.master'].user.user}}_buildbot-master.service"
+        name: "{{app.value.buildbot_master.user.user}}_buildbot-master.service"
         state: started
         enabled: True
 

@@ -4,6 +4,7 @@ After=network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=simple
+User={{app.value.buildbot_master.user.user}}
 ExecStart={{_app_dir}}/venv/bin/buildbot start --nodaemon {{_app_dir}}
 ExecStop={{_app_dir}}/venv/bin/buildbot stop {{_app_dir}}
 
