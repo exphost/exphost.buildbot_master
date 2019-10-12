@@ -1,0 +1,65 @@
+{% macro cs_common_git(cs) -%}
+c['change_source'].append(changes.GitPoller(
+                          "{{cs.repo}}",
+                          workdir='{{cs.workdir}}', branches={{cs.branches}},
+                          pollInterval={{cs.pollInterval}},
+                          project="{{cs.project}}"))
+{%- endmacro %}
+
+{% macro cs_common_gerrit(cs) -%}
+c['change_source'].append(changes.GerritChangeSource(
+                          gerritserver="{{cs.gerritserver}}",
+                          gerritport={{cs.gerritport}},
+                          username="{{cs.username}}",
+                          handled_events={{cs.handled_events}}))
+{%- endmacro %}
+
+{% macro s_common_any_gerrit_branch(s) -%}
+c['schedulers'].append(schedulers.AnyBranchScheduler(
+                       name="{{s.name}}",
+                       change_filter=util.GerritChangeFilter(eventtype="patchset-created", project="{{s.project}}"),
+                       treeStableTimer=1,
+                       builderNames={{s.builderNames}}))
+{%- endmacro %}
+
+{% macro s_common_single_git_branch(s) -%}
+c['schedulers'].append(schedulers.SingleBranchScheduler(
+                       name="{{s.name}}",
+                       change_filter=util.ChangeFilter(project=['{{s.project}}',], branch='{{s.branch}}'),
+                       treeStableTimer=1,
+                       builderNames={{s.builderNames}}))
+{%- endmacro %}
+
+{% macro b_common_simple_spec(b) -%}
+factory = util.BuildFactory()
+factory.addStep(steps.RemoveDirectory(dir="build"))
+factory.addStep(steps.{{b.poller}}(repourl="{{b.repo}}", mode='incremental'))
+{%   for filename in b.filenames %}
+factory.addStep(steps.RpmBuild(specfile="SPEC/{{filename}}"))
+{%   endfor %}
+c['builders'].append(util.BuilderConfig(name="{{b.name}}",
+                                        workernames=all_workers,
+                                        factory=factory))
+{%- endmacro %}
+
+{% macro b_common_simple_spec_and_upload(b) -%}
+factory = util.BuildFactory()
+factory.addStep(steps.RemoveDirectory(dir="build"))
+factory.addStep(steps.{{b.poller}}(repourl="{{b.repo}}", mode='incremental'))
+{% for filename in b.filenames %}
+factory.addStep(steps.RpmBuild(specfile="SPEC/{{filename}}"))
+factory.addStep(steps.DirectoryUpload(workersrc="x86_64/",
+               masterdest="./rpms/{{b.package}}/"))
+factory.addStep(steps.MasterShellCommand(command="scp rpms/{{b.package}}/* repo_uploader@repo.test.exphost.com:/var/www/repo"))
+{% endfor %}
+
+c['builders'].append(util.BuilderConfig(name="{{b.name}}",
+                                        workernames=all_workers,
+                                        factory=factory))
+{%- endmacro %}
+{% macro b_common_upload_rpm(b) -%}
+factory = util.BuildFactory()
+c['builders'].append(util.BuilderConfig(name="{{b.name}}",
+                                        workernames=all_workers,
+                                        factory=factory))
+{%- endmacro %}
