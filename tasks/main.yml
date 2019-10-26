@@ -8,6 +8,7 @@
       - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-setuptools"
       - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-devel"
       - gcc
+      - git
   become: True
 
 - name: set app dir value
