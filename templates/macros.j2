@@ -3,7 +3,10 @@ c['change_source'].append(changes.GitPoller(
                           "{{cs.repo}}",
                           workdir='{{cs.workdir}}', branches={{cs.branches}},
                           pollInterval={{cs.pollInterval}},
-                          project="{{cs.project}}"))
+                          project="{{cs.project}}",
+                          buildPushesWithNoCommits=True,
+                          pollAtLaunch=True
+                          ))
 {%- endmacro %}
 
 {% macro cs_common_gerrit(cs) -%}
