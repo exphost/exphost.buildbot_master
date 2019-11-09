@@ -33,6 +33,32 @@ c['schedulers'].append(schedulers.SingleBranchScheduler(
                        builderNames={{s.builderNames}}))
 {%- endmacro %}
 
+{% macro s_common_force_build(s) -%}
+c['schedulers'].append(schedulers.ForceScheduler(
+                       name="{{s.name}}",
+                       buttonName="Force build",
+                       builderNames={{s.builderNames}},
+                       codebases=[
+                         util.CodebaseParameter(
+                           "",
+                           label="main repo",
+                           branch=util.ChoiceStringParameter(
+                             name="branch",
+                             choices={{s.branches}},
+                             default="{{s.branches[0]}}"
+                           ),
+                           revision=util.FixedParameter(name="revision", default=""),
+                           repository=util.FixedParameter(name="repository", default=""),
+                           project=util.FixedParameter(name="project", default=""),
+                           ),
+                         ],
+                       reason=util.StringParameter(name="reason",
+                         label="reason:",
+                         required=True, size=80
+                         )
+                       ))
+{%- endmacro %}
+
 {% macro b_common_simple_spec(b) -%}
 factory = util.BuildFactory()
 factory.addStep(steps.RemoveDirectory(dir="build"))
