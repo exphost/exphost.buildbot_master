@@ -43,6 +43,15 @@
     args:
       creates: "{{_app_dir}}/state.sqlite"
 
+### TODO: find a way to do this without creating files in role!!!
+  - name: create userdefined macros heler (always run)
+    copy:
+      content: "{{ app.value.buildbot_master.configs.configuration.macros  + buildbot_default_macros}}"
+      dest: "{{role_path}}/templates/.macros_helper.j2"
+    become: False
+    check_mode: False
+    delegate_to: localhost
+
   - name: copy master.cfg
     template:
       src: master.cfg
