@@ -56,7 +56,7 @@
     template:
       src: master.cfg
       dest: "{{_app_dir}}/master.cfg"
-      validate: ~/build_hello_master/venv/bin/buildbot checkconfig %s
+      validate: ~/{{app.key}}/venv/bin/buildbot checkconfig %s
     notify:
       - buildbot restart
 
