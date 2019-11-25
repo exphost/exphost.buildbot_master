@@ -10,5 +10,5 @@ class FilterModule(object):
         for i in hostvars:
           for j in i.get('value').get('apps').items():
             if j[1].get('buildbot_worker',{}).get('configs',{}).get('master',{}).get('app_name') == master_name:
-                result.append(i.get('key') + '-' + j[0])
+                result.append(i.get('key').split('.')[0] + '-' + j[0])
         return result
