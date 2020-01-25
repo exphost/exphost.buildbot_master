@@ -81,3 +81,4 @@
         enabled: True
 
   become: True
+- include_tasks: consul_discovery.yml

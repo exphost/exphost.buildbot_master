@@ -1,0 +1,17 @@
+{
+  "services": [
+  {
+    "name": "buildbot_master-{{app.key}}",
+    "tags": ["buildbot", "buildbot_master"],
+    "port": {{app.value.endpoints.http.port}},
+    "checks": [
+    {
+      "tcp": "localhost:{{app.value.endpoints.http.port}}",
+      "interval": "5s",
+      "timeout": "1s"
+    }
+    ]
+  }
+  ]
+}
+
