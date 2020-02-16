@@ -1,11 +1,12 @@
 galaxy_info:
+  role_name: buildbot_master
   author: TORGiren
   description: Buildbot master role
   company: exphost
-  licence: MIT
+  license: MIT
   min_ansible_version: 2.8
   platforms:
-    - name: centos
+    - name: el
       versions:
         - 7
   galaxy_tags:
