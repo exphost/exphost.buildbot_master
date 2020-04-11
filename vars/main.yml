@@ -81,7 +81,7 @@ buildbot_default_macros: |
   factory.addStep(steps.RpmBuild(specfile="SPEC/{{filename}}"))
   factory.addStep(steps.DirectoryUpload(workersrc="x86_64/",
                  masterdest="./rpms/{{b.package}}/"))
-  factory.addStep(steps.MasterShellCommand(command="scp rpms/{{b.package}}/* repo_uploader@repo.test.exphost.com:/var/www/repo"))
+  factory.addStep(steps.MasterShellCommand(command="scp rpms/{{b.package}}/* {{b.upload_path}}"))
   {% endfor %}
   
   c['builders'].append(util.BuilderConfig(name="{{b.name}}",
