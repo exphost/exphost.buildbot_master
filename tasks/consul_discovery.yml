@@ -11,7 +11,8 @@
     - name: copy consul discovery script
       template:
         src: consul_discovery.json
-        dest: "/app/shared/consul/conf/buildbot_master-{{app.key}}.json"
+        dest: "/app/shared/consul/conf/buildbot_master-{{ app.key }}.json"
+        mode: 0644
       when: _consul_dir.stat.isdir|default(False)
   become: true
   become_user: root

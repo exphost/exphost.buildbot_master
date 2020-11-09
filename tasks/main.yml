@@ -5,50 +5,52 @@
 - name: system pkgs install (python, gcc)
   yum:
     name:
-      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}"
-      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-setuptools"
-      - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-devel"
+      - "python{{ app.value.buildbot_master.configs.python|replace('.','') }}"
+      - "python{{ app.value.buildbot_master.configs.python|replace('.','') }}-setuptools"
+      - "python{{ app.value.buildbot_master.configs.python|replace('.','') }}-devel"
       - gcc
       - git
   become: true
 
 - name: set app dir value
   set_fact:
-    _app_dir: "{{app.value.buildbot_master.user.home}}/{{app.key}}"
+    _app_dir: "{{ app.value.buildbot_master.user.home }}/{{ app.key }}"
 
 - block:
     - name: create dir for app
       file:
-        path: "{{_app_dir}}"
+        path: "{{ _app_dir }}"
         state: directory
+        mode: 0644
 
     - name: install pip
       vars:
-        ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
+        ansible_python_interpreter: "/usr/bin/python{{ app.value.buildbot_master.configs.python }}"
       pip:
         name: "pip"
         state: latest
-        virtualenv: "{{_app_dir}}/venv"
-        virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
+        virtualenv: "{{ _app_dir }}/venv"
+        virtualenv_command: "/usr/bin/python{{ app.value.buildbot_master.configs.python }} -m venv"
 
     - name: install buildbot master
       vars:
-        ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
+        ansible_python_interpreter: "/usr/bin/python{{ app.value.buildbot_master.configs.python }}"
       pip:
         name: "buildbot[bundle]"
-        virtualenv: "{{_app_dir}}/venv"
-        virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
+        virtualenv: "{{ _app_dir }}/venv"
+        virtualenv_command: "/usr/bin/python{{ app.value.buildbot_master.configs.python }} -m venv"
 
     - name: create master
-      command: "{{_app_dir}}/venv/bin/buildbot create-master {{_app_dir}}"
+      command: "{{ _app_dir }}/venv/bin/buildbot create-master {{ _app_dir }}"
       args:
-        creates: "{{_app_dir}}/state.sqlite"
+        creates: "{{ _app_dir }}/state.sqlite"
 
     ### TODO: find a way to do this without creating files in role!!!
     - name: create userdefined macros heler (always run)
       copy:
-        content: "{{ app.value.buildbot_master.configs.configuration.macros  + buildbot_default_macros}}"
-        dest: "{{role_path}}/templates/.macros_helper.j2"
+        content: "{{ app.value.buildbot_master.configs.configuration.macros  + buildbot_default_macros }}"
+        dest: "{{ role_path }}/templates/.macros_helper.j2"
+        mode: 0644
       become: false
       check_mode: false
       delegate_to: localhost
@@ -56,19 +58,21 @@
     - name: copy master.cfg
       template:
         src: master.cfg
-        dest: "{{_app_dir}}/master.cfg"
-        validate: ~/{{app.key}}/venv/bin/buildbot checkconfig %s
+        dest: "{{ _app_dir }}/master.cfg"
+        validate: ~/{{ app.key }}/venv/bin/buildbot checkconfig %s
+        mode: 0644
       notify:
         - buildbot restart
 
   become: true
-  become_user: "{{app.value.buildbot_master.user.user}}"
+  become_user: "{{ app.value.buildbot_master.user.user }}"
 
 - block:
     - name: copy service
       template:
         src: buildbot-master.service
-        dest: "/etc/systemd/system/{{app.value.buildbot_master.user.user}}_buildbot-master.service"
+        dest: "/etc/systemd/system/{{ app.value.buildbot_master.user.user }}_buildbot-master.service"
+        mode: 0644
       notify:
         - daemon reload
         - buildbot restart
@@ -77,7 +81,7 @@
 
     - name: start buildbot
       service:
-        name: "{{app.value.buildbot_master.user.user}}_buildbot-master.service"
+        name: "{{ app.value.buildbot_master.user.user }}_buildbot-master.service"
         state: started
         enabled: true
 
