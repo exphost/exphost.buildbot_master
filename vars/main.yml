@@ -1,3 +1,4 @@
+---
 buildbot_default_macros: |
   {% raw %}
   {% macro cs_common_git(cs) -%}
@@ -10,7 +11,7 @@ buildbot_default_macros: |
                             pollAtLaunch=True
                             ))
   {%- endmacro %}
-  
+
   {% macro cs_common_gerrit(cs) -%}
   c['change_source'].append(changes.GerritChangeSource(
                             gerritserver="{{cs.gerritserver}}",
@@ -18,7 +19,7 @@ buildbot_default_macros: |
                             username="{{cs.username}}",
                             handled_events={{cs.handled_events}}))
   {%- endmacro %}
-  
+
   {% macro s_common_any_gerrit_branch(s) -%}
   c['schedulers'].append(schedulers.AnyBranchScheduler(
                          name="{{s.name}}",
@@ -26,7 +27,7 @@ buildbot_default_macros: |
                          treeStableTimer=1,
                          builderNames={{s.builderNames}}))
   {%- endmacro %}
-  
+
   {% macro s_common_single_git_branch(s) -%}
   c['schedulers'].append(schedulers.SingleBranchScheduler(
                          name="{{s.name}}",
@@ -34,7 +35,7 @@ buildbot_default_macros: |
                          treeStableTimer=1,
                          builderNames={{s.builderNames}}))
   {%- endmacro %}
-  
+
   {% macro s_common_force_build(s) -%}
   c['schedulers'].append(schedulers.ForceScheduler(
                          name="{{s.name}}",
@@ -60,7 +61,7 @@ buildbot_default_macros: |
                            )
                          ))
   {%- endmacro %}
-  
+
   {% macro b_common_simple_spec(b) -%}
   factory = util.BuildFactory()
   factory.addStep(steps.RemoveDirectory(dir="build"))
@@ -72,7 +73,7 @@ buildbot_default_macros: |
                                           workernames=all_workers,
                                           factory=factory))
   {%- endmacro %}
-  
+
   {% macro b_common_simple_spec_and_upload(b) -%}
   factory = util.BuildFactory()
   factory.addStep(steps.RemoveDirectory(dir="build"))
@@ -83,7 +84,7 @@ buildbot_default_macros: |
                  masterdest="./rpms/{{b.package}}/"))
   factory.addStep(steps.MasterShellCommand(command="scp rpms/{{b.package}}/* {{b.upload_path}}"))
   {% endfor %}
-  
+
   c['builders'].append(util.BuilderConfig(name="{{b.name}}",
                                           workernames=all_workers,
                                           factory=factory))
@@ -94,4 +95,4 @@ buildbot_default_macros: |
                                           workernames=all_workers,
                                           factory=factory))
   {%- endmacro %}
-  {% endraw %} 
+  {% endraw %}

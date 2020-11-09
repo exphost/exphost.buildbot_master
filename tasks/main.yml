@@ -1,3 +1,4 @@
+---
 - name: debug
   debug:
     msg: "jeste buildbote"
@@ -9,58 +10,58 @@
       - "python{{app.value.buildbot_master.configs.python|replace('.','')}}-devel"
       - gcc
       - git
-  become: True
+  become: true
 
 - name: set app dir value
   set_fact:
     _app_dir: "{{app.value.buildbot_master.user.home}}/{{app.key}}"
 
 - block:
-  - name: create dir for app
-    file:
-      path: "{{_app_dir}}"
-      state: directory
+    - name: create dir for app
+      file:
+        path: "{{_app_dir}}"
+        state: directory
 
-  - name: install pip
-    vars:
-      ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
-    pip:
-      name: "pip"
-      state: latest
-      virtualenv: "{{_app_dir}}/venv"
-      virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
+    - name: install pip
+      vars:
+        ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
+      pip:
+        name: "pip"
+        state: latest
+        virtualenv: "{{_app_dir}}/venv"
+        virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
 
-  - name: install buildbot master
-    vars:
-      ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
-    pip:
-      name: "buildbot[bundle]"
-      virtualenv: "{{_app_dir}}/venv"
-      virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
+    - name: install buildbot master
+      vars:
+        ansible_python_interpreter: "/usr/bin/python{{app.value.buildbot_master.configs.python}}"
+      pip:
+        name: "buildbot[bundle]"
+        virtualenv: "{{_app_dir}}/venv"
+        virtualenv_command: "/usr/bin/python{{app.value.buildbot_master.configs.python}} -m venv"
 
-  - name: create master
-    command: "{{_app_dir}}/venv/bin/buildbot create-master {{_app_dir}}"
-    args:
-      creates: "{{_app_dir}}/state.sqlite"
+    - name: create master
+      command: "{{_app_dir}}/venv/bin/buildbot create-master {{_app_dir}}"
+      args:
+        creates: "{{_app_dir}}/state.sqlite"
 
-### TODO: find a way to do this without creating files in role!!!
-  - name: create userdefined macros heler (always run)
-    copy:
-      content: "{{ app.value.buildbot_master.configs.configuration.macros  + buildbot_default_macros}}"
-      dest: "{{role_path}}/templates/.macros_helper.j2"
-    become: False
-    check_mode: False
-    delegate_to: localhost
+    ### TODO: find a way to do this without creating files in role!!!
+    - name: create userdefined macros heler (always run)
+      copy:
+        content: "{{ app.value.buildbot_master.configs.configuration.macros  + buildbot_default_macros}}"
+        dest: "{{role_path}}/templates/.macros_helper.j2"
+      become: false
+      check_mode: false
+      delegate_to: localhost
 
-  - name: copy master.cfg
-    template:
-      src: master.cfg
-      dest: "{{_app_dir}}/master.cfg"
-      validate: ~/{{app.key}}/venv/bin/buildbot checkconfig %s
-    notify:
-      - buildbot restart
+    - name: copy master.cfg
+      template:
+        src: master.cfg
+        dest: "{{_app_dir}}/master.cfg"
+        validate: ~/{{app.key}}/venv/bin/buildbot checkconfig %s
+      notify:
+        - buildbot restart
 
-  become: True
+  become: true
   become_user: "{{app.value.buildbot_master.user.user}}"
 
 - block:
@@ -78,7 +79,7 @@
       service:
         name: "{{app.value.buildbot_master.user.user}}_buildbot-master.service"
         state: started
-        enabled: True
+        enabled: true
 
-  become: True
+  become: true
 - include_tasks: consul_discovery.yml

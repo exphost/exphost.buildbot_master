@@ -1,3 +1,4 @@
+---
 - name: deb
   debug:
     msg: "tu jestem"
@@ -12,5 +13,5 @@
         src: consul_discovery.json
         dest: "/app/shared/consul/conf/buildbot_master-{{app.key}}.json"
       when: _consul_dir.stat.isdir|default(False)
-  become: True
+  become: true
   become_user: root
