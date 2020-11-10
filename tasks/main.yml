@@ -21,7 +21,7 @@
       file:
         path: "{{ _app_dir }}"
         state: directory
-        mode: 0644
+        mode: 0755
 
     - name: install pip
       vars:
