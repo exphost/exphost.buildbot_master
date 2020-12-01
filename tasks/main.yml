@@ -24,6 +24,16 @@
         state: directory
         mode: 0755
 
+    - name: create .ssh dir
+      file:
+        path: "{{app.value.buildbot_master.user.home}}/.ssh"
+        state: directory
+
+    - name: generate ssh key
+      openssh_keypair:
+        path: "{{app.value.buildbot_master.user.home}}/.ssh/id_rsa"
+        comment: "{{inventory_hostname}}-{{app.value.buildbot_master.user.user}}"
+
     - name: install pip
       vars:
         ansible_python_interpreter: "/usr/bin/python{{ app.value.buildbot_master.configs.python }}"
