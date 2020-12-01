@@ -62,6 +62,11 @@ buildbot_default_macros: |
                          ))
   {%- endmacro %}
 
+  {% macro s_common_triggerable(s) -%}
+  s = schedulers.Triggerable(name="{{s.name}}", builderNames={{s.buildernames}})
+  c['schedulers'].append(s)
+  {%- endmacro %}
+
   {% macro b_common_simple_spec(b) -%}
   factory = util.BuildFactory()
   factory.addStep(steps.RemoveDirectory(dir="build"))
