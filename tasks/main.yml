@@ -70,10 +70,12 @@
       template:
         src: master.cfg
         dest: "{{ _app_dir }}/master.cfg"
-        validate: ~/{{ app.key }}/venv/bin/buildbot checkconfig %s
-        mode: 0644
+        validate: "{{app.value.buildbot_master.user.home}}/{{ app.key }}/venv/bin/buildbot checkconfig %s"
+        mode: "0644"
+        owner: "{{ app.value.buildbot_master.user.user }}" #Temporary fix, because tmp file on template has wrong permissions and validate doesn't work
       notify:
         - buildbot restart
+      become_user: "root"
 
   become: true
   become_user: "{{ app.value.buildbot_master.user.user }}"
