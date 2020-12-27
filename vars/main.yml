@@ -71,8 +71,8 @@ buildbot_default_macros: |
   factory = util.BuildFactory()
   factory.addStep(steps.RemoveDirectory(dir="build"))
   factory.addStep(steps.{{b.poller}}(repourl="{{b.repo}}", mode='incremental'))
-  {%   for filename in b.filenames %}
-  factory.addStep(steps.RpmBuild(specfile="SPEC/{{filename}}"))
+  {%   for package in b.packages %}
+  factory.addStep(steps.RpmBuild(specfile="SPEC/{{package.filename}}"))
   {%   endfor %}
   c['builders'].append(util.BuilderConfig(name="{{b.name}}",
                                           workernames=all_workers,
@@ -83,11 +83,11 @@ buildbot_default_macros: |
   factory = util.BuildFactory()
   factory.addStep(steps.RemoveDirectory(dir="build"))
   factory.addStep(steps.{{b.poller}}(repourl="{{b.repo}}", mode='incremental'))
-  {% for filename in b.filenames %}
-  factory.addStep(steps.RpmBuild(specfile="SPEC/{{filename}}"))
+  {%   for package in b.packages %}
+  factory.addStep(steps.RpmBuild(specfile="SPEC/{{package.filename}}"))
   factory.addStep(steps.DirectoryUpload(workersrc="x86_64/",
-                 masterdest="./rpms/{{b.package}}/"))
-  factory.addStep(steps.MasterShellCommand(command="scp rpms/{{b.package}}/* {{b.upload_path}}"))
+                 masterdest="./rpms/{{package.name}}/"))
+  factory.addStep(steps.MasterShellCommand(command="scp rpms/{{package.name}}/* {{b.upload_path}}"))
   {% endfor %}
 
   c['builders'].append(util.BuilderConfig(name="{{b.name}}",
