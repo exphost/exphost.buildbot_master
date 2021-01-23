@@ -50,6 +50,8 @@
         name: "buildbot[bundle]"
         virtualenv: "{{ _app_dir }}/venv"
         virtualenv_command: "/usr/bin/python{{ app.value.buildbot_master.configs.python }} -m venv"
+        version: "{{ app.value.buildbot_master.version |default(omit) }}"
+      register: _buildbot_install
 
     - name: create master
       command: "{{ _app_dir }}/venv/bin/buildbot create-master {{ _app_dir }}"
@@ -76,6 +78,10 @@
       notify:
         - buildbot restart
       become_user: "root"
+
+    - name: run buildbot upgrade-master
+      command: "{{ app.value.buildbot_master.user.home }}/{{ app.key }}/venv/bin/buildbot upgrade-master {{app.value.buildbot_master.user.home}}/{{ app.key }}"
+      when: _buildbot_install.changed
 
   become: true
   become_user: "{{ app.value.buildbot_master.user.user }}"
